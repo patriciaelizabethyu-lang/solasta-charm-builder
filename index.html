@@ -59,9 +59,30 @@ button,input,select,textarea{font:inherit;color:inherit}
 .stage h1{margin:0;padding:6px 16px 0;font:400 13px/1.3 var(--body);color:var(--cocoa);text-align:center}
 .stage h1 .cap{font-size:12px;color:var(--cocoa);opacity:.8}
 .stage svg#chain{display:block;width:100%;height:164px;touch-action:manipulation}
-.hint{position:absolute;left:0;right:0;top:64px;text-align:center;font:italic 400 14px/1.3 var(--display);color:var(--cocoa);pointer-events:none}
-.hint[hidden]{display:none}
-.charm-on-chain{cursor:pointer}
+.hinttext{font:italic 400 14px var(--display);fill:var(--cocoa)}
+.charm-on-chain{cursor:grab}
+#chain{touch-action:none}
+#chain.dragging,#chain.dragging .charm-on-chain{cursor:grabbing}
+.charm-on-chain.sel{filter:drop-shadow(0 0 1px var(--cocoa)) drop-shadow(0 0 4px rgba(161,101,76,.85))}
+.tools{position:absolute;z-index:7;display:flex;gap:2px;background:var(--ink);border-radius:999px;padding:4px;box-shadow:0 8px 20px -8px rgba(61,42,33,.6);transform:translateX(-50%)}
+.tools[hidden],.coach[hidden]{display:none}
+.tools button{border:0;background:none;color:#fff;font-weight:800;border-radius:999px;padding:6px 12px;cursor:pointer;font-size:13px;line-height:1.2}
+.tools button[aria-label]{font-size:24px;line-height:1;padding:0 14px 3px;min-width:44px}
+.tools button:hover{background:rgba(255,255,255,.14)}
+.tools button:disabled{opacity:.3;cursor:default}
+.coach{position:absolute;z-index:7;transform:translateX(-50%);background:var(--gold-hi);color:var(--ink);font-size:12px;font-weight:800;border-radius:999px;padding:5px 11px;pointer-events:none;white-space:nowrap;animation:coach 3.4s ease forwards;box-shadow:0 6px 16px -8px rgba(61,42,33,.5)}
+@keyframes coach{0%{opacity:0;margin-top:6px}10%,82%{opacity:1;margin-top:0}100%{opacity:0}}
+/* every button gives a little press */
+button{transition:transform .12s ease,background-color .15s,box-shadow .15s,filter .15s}
+.bar button:active,.primary:active,.word button:active,.chip:active,.seg button:active,.tab:active,.icon:active,.ghost:active,.tools button:active,.opt:active{transform:scale(.94)}
+.bar button:active{background:var(--gold)}
+.primary:active{background:var(--ink)}
+.primary:hover,.bar button:hover{filter:brightness(1.06)}
+@keyframes pop{0%{transform:scale(.9)}45%{transform:scale(1.07);box-shadow:0 0 0 2px var(--gold)}100%{transform:none;box-shadow:0 0 0 0 var(--gold)}}
+.tile.pop{animation:pop .45s ease-out}
+@keyframes bump{0%,100%{transform:none}40%{transform:scale(1.1)}}
+#go.bump{animation:bump .4s ease-out}
+@media (hover:hover){.tile{cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28'><circle cx='14' cy='14' r='8' fill='%23fffaf3' stroke='%23c99a4a' stroke-width='2.5'/><path d='M14 10.5v7M10.5 14h7' stroke='%23834d39' stroke-width='2' stroke-linecap='round'/></svg>") 14 14, pointer}}
 .charm-on-chain:focus-visible{outline:none}
 .charm-on-chain:focus-visible .ring{stroke:var(--cocoa);stroke-width:2}
 @keyframes swing{0%{transform:rotate(16deg)}35%{transform:rotate(-9deg)}60%{transform:rotate(5deg)}80%{transform:rotate(-2deg)}100%{transform:rotate(0)}}
@@ -207,7 +228,6 @@ legend{font-weight:800;margin-bottom:6px;color:var(--ink)}
   .stage h1{font:400 26px/1.2 var(--display);color:var(--ink);text-align:left;padding:0 4px}
   .stage h1 .cap{display:block;font:400 13px var(--body);color:var(--cocoa);margin-top:4px;min-height:18px}
   .stage svg#chain{height:auto;aspect-ratio:360/178;margin:12px 0 14px;border-radius:20px;background:radial-gradient(ellipse at 50% 20%,#fff 0%,var(--linen) 75%)}
-  .hint{top:48%;font-size:19px}
   .bar{position:static;display:block}
   .bar > div{max-width:none;border-radius:18px;padding:14px 14px 14px 20px}
   .bar .t b{font-size:22px}
@@ -227,7 +247,8 @@ legend{font-weight:800;margin-bottom:6px;color:var(--ink)}
   .bd svg.pic{height:180px}
 }
 @media (prefers-reduced-motion:reduce){
-  .swing,.spark,.flash{animation:none}
+  .swing,.spark,.flash,.tile.pop,#go.bump{animation:none}
+  .coach{animation:none}
   .sp-draw{animation:none;stroke-dashoffset:0}
   .sp-charm,.sp-in p{animation:none;opacity:1}
 }
@@ -261,7 +282,10 @@ legend{font-weight:800;margin-bottom:6px;color:var(--ink)}
       <section class="stage" aria-label="Your design">
         <h1 id="pieceLabel"><span id="pieceName">Charm necklace</span> <span class="cap" id="pieceCap"></span></h1>
         <svg id="chain" viewBox="0 0 360 178" role="img" aria-label="Preview of your chain and charms"></svg>
-        <div class="hint" id="hint">Tap a charm to hang it here</div>
+        <div class="tools" id="tools" role="toolbar" aria-label="Move or remove this charm" hidden>
+          <button type="button" id="tLeft" aria-label="Move left">‹</button><button type="button" id="tRemove">Remove</button><button type="button" id="tRight" aria-label="Move right">›</button>
+        </div>
+        <div class="coach" id="coach" hidden></div>
         <div class="bar"><div>
           <div class="t"><b id="barTotal">₱0</b> <span id="barCount">· no charms yet</span><small id="barNote" aria-live="polite"></small></div>
           <button type="button" id="go">Pick a charm</button>
@@ -465,8 +489,10 @@ function gradient(svg){
 }
 const charmSrc = sel => "charms/" + (sel.variant ? byId[sel.id].variant_files.replace("{v}", sel.variant) : byId[sel.id].file);
 
+let SLOTS = [];  // where each charm hangs on the interactive chain, for drag and the toolbar
 function drawChain(svg, s, opts){
   svg.innerHTML = "";
+  if (opts.interactive) SLOTS = [];
   const gold = gradient(svg);
   const path = el("path", { d: PATHS[s.piece], fill:"none", stroke:"none" }, svg);
   const L = path.getTotalLength();
@@ -476,7 +502,10 @@ function drawChain(svg, s, opts){
   const items = s.charms.map((c, idx) => ({ type:"charm", c, idx }));
   if (s.clasp) items.splice(Math.floor(items.length / 2), 0, { type:"clasp" });
   const n = items.length;
-  if (!n) return;
+  if (!n) {
+    if (opts.interactive) el("text", { x:180, y:146, "text-anchor":"middle", class:"hinttext" }, svg).textContent = "Pick a charm to hang it here";
+    return;
+  }
   const span = Math.min(0.86, 0.26 + n * 0.055);
   const size = Math.max(20, Math.min(38, (L * span) / n * 0.95));
   items.forEach((it, j) => {
@@ -503,13 +532,21 @@ function drawChain(svg, s, opts){
     el("image", { href:charmSrc(it.c), x:p.x - bx, y:ay - by, width:dw, height:dh,
                   transform: rot ? `rotate(${rot.toFixed(1)} ${p.x.toFixed(1)} ${ay.toFixed(1)})` : "" }, grp);
     if (opts.interactive) {
-      grp.setAttribute("class", "charm-on-chain");
+      // a bigger invisible target than the charm itself, so it's easy to tap on a phone
+      const hw = Math.max(size, 24) / 2;
+      grp.insertBefore(el("rect", { x:p.x - hw, y:p.y - 6, width:hw * 2, height:size * 1.35 + 10, fill:"#000", "fill-opacity":0 }), grp.firstChild);
+      SLOTS.push({ idx:it.idx, x:p.x, bottom:ay + dh });
+      grp.setAttribute("class", "charm-on-chain" + (s.sel === it.idx ? " sel" : ""));
+      grp.dataset.idx = it.idx;
       grp.setAttribute("tabindex", "0");
       grp.setAttribute("role", "button");
-      grp.setAttribute("aria-label", "Take off " + charmName(it.c));
-      const rm = () => removeAt(it.idx);
-      grp.addEventListener("click", rm);
-      grp.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); rm(); } });
+      grp.setAttribute("aria-label", `${charmName(it.c)}. Enter for options, arrow keys to move, Delete to take off`);
+      grp.addEventListener("keydown", e => {
+        const i = it.idx;
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); state.sel = state.sel === i ? null : i; update(); refocus(i); }
+        else if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); const j = i + (e.key === "ArrowLeft" ? -1 : 1); if (moveCharm(i, j)) { update(true); refocus(j); } }
+        else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); removeAt(i); }
+      });
       if (opts.justAdded === it.idx) {
         grp.classList.add("swing");
         const sp = el("text", { x:p.x + w / 2, y:p.y + 6, "font-size":11, fill:"var(--gold-lo)", class:"spark" }, svg);
@@ -535,7 +572,7 @@ const specText = () => `${state.clasp ? "Clasp charm" : "Charm"} ${state.piece} 
 function renderControls(){
   document.querySelectorAll("[data-piece]").forEach(b => b.setAttribute("aria-pressed", b.dataset.piece === state.piece));
   $("pieceName").textContent = (state.clasp ? "Clasp charm " : "Charm ") + state.piece;
-  $("pieceCap").textContent = state.charms.length ? "Tap a charm on the chain to take it off" : "";
+  $("pieceCap").textContent = state.charms.length ? (matchMedia("(hover:hover)").matches ? "Drag a charm to move it, or click it for options" : "Tap one on the chain to move it") : "";
   const sty = $("styles"); sty.innerHTML = "";
   for (const style in RULES.styles) for (const th in RULES.styles[style]) {
     const b = document.createElement("button");
@@ -583,7 +620,7 @@ function renderGrid(){
   CHARMS.filter(c => c.category === state.tab).forEach(c => {
     const count = state.charms.filter(s => s.id === c.id).length;
     const b = document.createElement("button");
-    b.type = "button"; b.className = "tile" + (c.variant_set ? " letters-tile" : "");
+    b.type = "button"; b.className = "tile" + (c.variant_set ? " letters-tile" : "") + (c.id === popId ? " pop" : "");
     b.setAttribute("aria-label", c.variant_set ? `Add ${c.name}s, A to Z, plus ${RULES.tier_delta[c.tier]} pesos each` : `Add ${c.name}, ${c.tier === "basic" ? "included" : "plus " + RULES.tier_delta[c.tier] + " pesos"}`);
     b.innerHTML = `<img src="charms/${c.file}" alt="" loading="lazy"><span class="nm">${c.variant_set ? "A to Z, or type a name" : c.name}</span>${badge(c.tier)}${count ? `<span class="count">${count}</span>` : ""}`;
     b.onclick = () => c.variant_set ? openLetters() : add([{ id:c.id }]);
@@ -620,9 +657,10 @@ $("wordForm").onsubmit = e => {
 };
 $("lpClose").onclick = () => $("letterPick").close();
 
-let justAdded = null, note = "";
+let justAdded = null, note = "", popId = null, coached = false;
 function add(sels, label){
   const before = price(state);
+  state.sel = null; popId = sels[0].id;
   state.charms.push(...sels);
   justAdded = state.charms.length - 1;
   const after = price(state);
@@ -631,10 +669,12 @@ function add(sels, label){
     note = up ? `Spot is free, only the +₱${up} premium` : "This one's free ✦";
   else note = `Added ${label || charmName(sels[0])}`;
   update(true);
+  const go = $("go"); go.classList.remove("bump"); void go.offsetWidth; go.classList.add("bump");
+  if (!coached) { coached = true; coach(state.charms.length - 1); }
 }
 function removeAt(idx){
   const [gone] = state.charms.splice(idx, 1);
-  justAdded = null; note = `Took off ${charmName(gone)}`;
+  justAdded = null; state.sel = null; note = `Took off ${charmName(gone)}`;
   update(true);
 }
 
@@ -715,7 +755,7 @@ $("place").onclick = () => {
   if (miss.length) { $(miss[0]).focus(); return; }
   setStep("done");
 };
-$("again").onclick = () => { state.charms = []; state.clasp = false; state.extender = false; note = ""; $("cart").close(); update(); };
+$("again").onclick = () => { state.charms = []; state.sel = null; state.clasp = false; state.extender = false; note = ""; $("cart").close(); update(); };
 document.querySelectorAll("[name=ship]").forEach(r => r.onchange = renderCheckout);
 RULES.payment.slice().sort((a, b) => (b === "GCash") - (a === "GCash")).forEach(m => {
   $("pays").insertAdjacentHTML("beforeend", `<label class="opt"><input type="radio" name="pay" value="${m}"${m === state.pay ? " checked" : ""}><span>${m}</span></label>`);
@@ -746,8 +786,9 @@ $("copy").onclick = async () => {
 function update(fromCharm){
   const p = price(state);
   renderControls();
+  if (state.sel != null && state.sel >= state.charms.length) state.sel = null;
   drawChain($("chain"), state, { interactive:true, justAdded });
-  $("hint").hidden = !!(state.charms.length || state.clasp);
+  placeTools();
   const n = state.charms.length, any = n || state.clasp;
   $("barTotal").textContent = peso(p.total);
   $("barCount").textContent = n ? `· ${n} charm${n > 1 ? "s" : ""}${state.clasp ? " + clasp" : ""}` : state.clasp ? "· clasp charm" : "· no charms yet";
@@ -759,7 +800,7 @@ function update(fromCharm){
   $("go").textContent = any ? "Add to cart" : "Pick a charm";
   $("go").classList.toggle("quiet", !any);
   renderGrid();
-  justAdded = null;
+  justAdded = null; popId = null;
 }
 
 document.querySelectorAll("[data-piece]").forEach(b => b.onclick = () => {
@@ -775,6 +816,74 @@ $("clasp").onchange = e => {
 };
 $("extender").onchange = e => { state.extender = e.target.checked; update(); };
 $("go").onclick = openCart;
+
+/* ---------- move and remove charms on the chain: tap for the toolbar, or drag ---------- */
+function moveCharm(from, to){
+  if (to < 0 || to >= state.charms.length || to === from) return false;
+  const [c] = state.charms.splice(from, 1);
+  state.charms.splice(to, 0, c);
+  state.sel = to; note = `Moved ${charmName(c)}`;
+  return true;
+}
+const refocus = i => { const g = $("chain").querySelector(`[data-idx="${i}"]`); if (g) g.focus(); };
+// screen spot under a hung charm, in stage coordinates
+function spotUnder(idx){
+  const s = SLOTS.find(x => x.idx === idx); if (!s) return null;
+  const svg = $("chain"), pt = svg.createSVGPoint(); pt.x = s.x; pt.y = s.bottom;
+  const q = pt.matrixTransform(svg.getScreenCTM()), r = document.querySelector(".stage").getBoundingClientRect();
+  return { left: Math.max(78, Math.min(r.width - 78, q.x - r.left)), top: q.y - r.top + 6 };
+}
+function placeTools(){
+  const t = $("tools"), at = state.sel == null ? null : spotUnder(state.sel);
+  t.hidden = !at; if (!at) return;
+  t.style.left = at.left + "px"; t.style.top = at.top + "px";
+  $("tLeft").disabled = state.sel === 0;
+  $("tRight").disabled = state.sel === state.charms.length - 1;
+}
+function coach(idx){
+  const c = $("coach"), at = spotUnder(idx); if (!at) return;
+  c.textContent = matchMedia("(hover:hover)").matches ? "Drag me to move, or click me" : "Tap me to move or remove";
+  c.style.left = at.left + "px"; c.style.top = at.top + "px";
+  c.hidden = false; c.style.animation = "none"; void c.offsetWidth; c.style.animation = "";
+  setTimeout(() => c.hidden = true, 3500);
+}
+$("tLeft").onclick = () => { if (moveCharm(state.sel, state.sel - 1)) update(true); };
+$("tRight").onclick = () => { if (moveCharm(state.sel, state.sel + 1)) update(true); };
+$("tRemove").onclick = () => removeAt(state.sel);
+addEventListener("resize", placeTools);
+addEventListener("scroll", placeTools, { passive:true });
+
+let drag = null;
+const chainSvg = $("chain");
+chainSvg.addEventListener("pointerdown", e => {
+  const g = e.target.closest(".charm-on-chain");
+  if (!g) { if (state.sel != null) { state.sel = null; update(); } return; }
+  drag = { idx:+g.dataset.idx, x:e.clientX, y:e.clientY, moved:false };
+  chainSvg.setPointerCapture(e.pointerId);
+});
+chainSvg.addEventListener("pointermove", e => {
+  if (!drag) return;
+  if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
+  if (!drag.moved) { drag.moved = true; chainSvg.classList.add("dragging"); $("coach").hidden = true; state.sel = drag.idx; }
+  const pt = chainSvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  const x = pt.matrixTransform(chainSvg.getScreenCTM().inverse()).x;
+  let best = drag.idx, bd = Infinity;
+  SLOTS.forEach(s => { const d = Math.abs(s.x - x); if (d < bd) { bd = d; best = s.idx; } });
+  if (best !== drag.idx && moveCharm(drag.idx, best)) { drag.idx = best; drawChain(chainSvg, state, { interactive:true }); placeTools(); }
+});
+const endDrag = () => {
+  if (!drag) return;
+  chainSvg.classList.remove("dragging");
+  if (drag.moved) { state.sel = null; update(true); }
+  else { state.sel = state.sel === drag.idx ? null : drag.idx; update(); }
+  drag = null;
+};
+chainSvg.addEventListener("pointerup", endDrag);
+chainSvg.addEventListener("pointercancel", endDrag);
+// tapping anywhere else closes the toolbar
+document.addEventListener("pointerdown", e => {
+  if (state.sel != null && !e.target.closest("#chain, #tools")) { state.sel = null; update(); }
+});
 
 /* ---------- self-test: open index.html?test ---------- */
 function selfTest(){
