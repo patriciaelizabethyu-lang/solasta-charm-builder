@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Design your charm jewelry · Solasta Jewelry Bar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --clay:#a1654c;      /* their announcement bar */
+  --cocoa:#834d39;     /* their deep brown */
+  --ink:#3d2a21;       /* body text */
+  --sand:#c3957a;      /* their warm mid tone */
+  --linen:#f6efe5;     /* page */
+  --oat:#e9dccb;       /* lines, quiet surfaces */
+  --card:#fffaf3;
+  --gold-hi:#f4e2ac; --gold:#c99a4a; --gold-lo:#9c7233;
+  --display:"Libre Baskerville",Georgia,serif;
+  --body:"Nunito Sans",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--oat);color:var(--ink);font:400 15px/1.45 var(--body)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cocoa);outline-offset:2px;border-radius:6px}
+.app{max-width:480px;margin:0 auto;background:var(--linen);min-height:100vh;padding-bottom:84px;box-shadow:0 0 0 1px rgba(131,77,57,.08)}
+
+/* loading screen */
+#splash{position:fixed;inset:0;z-index:100;background:var(--linen);display:grid;place-items:center;transition:opacity .55s ease,visibility .55s;animation:autohide 0s 6s forwards}
+#splash.gone{opacity:0;visibility:hidden}
+@keyframes autohide{to{opacity:0;visibility:hidden}}
+.sp-in{text-align:center;padding:0 24px}
+.sp-in svg{display:block;width:230px;height:120px;margin:0 auto}
+.sp-draw{stroke-dasharray:260;stroke-dashoffset:260;animation:draw 1s cubic-bezier(.45,.05,.3,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.sp-charm{opacity:0;transform-box:view-box;transform-origin:115px 79px;animation:drop .9s cubic-bezier(.3,1.3,.5,1) 1s forwards}
+@keyframes drop{0%{opacity:0;transform:translateY(-30px) rotate(16deg)}45%{opacity:1;transform:translateY(0) rotate(-10deg)}70%{transform:rotate(5deg)}100%{opacity:1;transform:none}}
+.sp-word{display:flex;align-items:baseline;justify-content:center;gap:9px;margin-top:6px}
+.sp-word b{font:italic 400 38px/1 var(--display);color:var(--clay);letter-spacing:-.01em}
+.sp-word span{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--cocoa)}
+.sp-in p{margin:14px 0 0;font:italic 400 14px var(--display);color:var(--cocoa);opacity:0;animation:fadein .5s ease .1s forwards}
+@keyframes fadein{to{opacity:1}}
+
+/* header */
+.top{background:var(--clay);color:#fff;text-align:center;font-size:12px;letter-spacing:.04em;padding:6px 12px}
+.brand{display:flex;align-items:baseline;justify-content:center;gap:8px;padding:14px 16px 4px}
+.brand b{font:italic 400 26px/1 var(--display);color:var(--clay);letter-spacing:-.01em}
+.brand span{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--cocoa)}
+.brand .tag{display:none}
+
+/* phone: the left column melts away so the stage can stick to the page */
+.left{display:contents}
+
+/* sticky chain stage */
+.stage{position:sticky;top:0;z-index:5;background:var(--linen);border-bottom:1px solid var(--oat)}
+.stage h1{margin:0;padding:6px 16px 0;font:400 13px/1.3 var(--body);color:var(--cocoa);text-align:center}
+.stage h1 .cap{font-size:12px;color:var(--cocoa);opacity:.8}
+.stage svg#chain{display:block;width:100%;height:164px;touch-action:manipulation}
+.hint{position:absolute;left:0;right:0;top:64px;text-align:center;font:italic 400 14px/1.3 var(--display);color:var(--cocoa);pointer-events:none}
+.hint[hidden]{display:none}
+.charm-on-chain{cursor:pointer}
+.charm-on-chain:focus-visible{outline:none}
+.charm-on-chain:focus-visible .ring{stroke:var(--cocoa);stroke-width:2}
+@keyframes swing{0%{transform:rotate(16deg)}35%{transform:rotate(-9deg)}60%{transform:rotate(5deg)}80%{transform:rotate(-2deg)}100%{transform:rotate(0)}}
+.swing{animation:swing .9s ease-out;transform-box:view-box}
+@keyframes spark{0%{opacity:0;transform:scale(.3)}30%{opacity:1}100%{opacity:0;transform:scale(1.4)}}
+.spark{animation:spark .7s ease-out forwards;transform-box:fill-box;transform-origin:center}
+
+/* chain controls */
+.chainbox{margin:10px 16px 0;background:var(--card);border:1px solid var(--oat);border-radius:14px}
+.chainbox summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;font-weight:700}
+.chainbox summary::-webkit-details-marker{display:none}
+#chainSum{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chainbox .chg{color:var(--clay);font-size:13px;white-space:nowrap}
+.chainbox .chg::after{content:" ▾"}
+.chainbox[open] .chg::after{content:" ▴"}
+.controls{padding:2px 12px 12px;display:grid;gap:10px}
+.lbl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--cocoa);margin:2px 2px -4px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--oat);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;border-radius:999px;padding:8px 0;font-weight:700;cursor:pointer;color:var(--cocoa)}
+.seg button[aria-pressed=true]{background:var(--card);box-shadow:0 1px 3px rgba(61,42,33,.15);color:var(--ink)}
+.styles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.lenrow{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.chip{border:1px solid var(--oat);background:var(--card);border-radius:12px;padding:6px 6px 7px;cursor:pointer;text-align:center;line-height:1.2;font-size:13px;font-weight:700;min-width:0}
+.chip svg{display:block;width:100%;height:14px;margin:0 0 3px}
+.chip[aria-pressed=true]{border-color:var(--cocoa);box-shadow:inset 0 0 0 1px var(--cocoa);background:#fff}
+.chip small{display:block;font-size:10.5px;color:var(--cocoa);font-weight:700}
+.chip .best{color:var(--clay)}
+.stylenote{font-size:13px;color:var(--cocoa);margin:-2px 2px 0;min-height:19px}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--oat);border-radius:12px;padding:9px 12px;cursor:pointer}
+.toggle input{flex:none;width:20px;height:20px;accent-color:var(--cocoa)}
+.toggle span small{display:block;font-size:12px;color:var(--cocoa)}
+.trust{margin:6px 16px 0;font-size:12.5px;color:var(--cocoa);display:flex;gap:6px;align-items:center}
+
+/* charm library */
+#charms{scroll-margin-top:var(--stageH,190px)}
+.tabs{position:sticky;top:var(--stageH,190px);z-index:4;background:var(--linen);display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:12px 16px 8px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:0;background:none;padding:6px 10px;border-radius:999px;font-weight:700;color:var(--cocoa);cursor:pointer;white-space:nowrap}
+.tab[aria-selected=true]{background:var(--cocoa);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:4px 16px 8px}
+.tile{position:relative;border:0;background:var(--card);border-radius:14px;padding:8px 4px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;transition:box-shadow .15s}
+.tile img{width:100%;aspect-ratio:1;object-fit:contain}
+.tile .nm{font-size:10.5px;line-height:1.2;color:var(--ink);text-align:center;height:2.4em;overflow:hidden}
+.badge{font-size:10.5px;font-weight:800;color:var(--cocoa);background:var(--oat);border-radius:6px;padding:1px 6px}
+.badge.inc{background:none;color:#6f7d55}
+.tile .count{position:absolute;top:5px;right:5px;background:var(--cocoa);color:#fff;font-size:11px;font-weight:800;border-radius:999px;min-width:19px;height:19px;display:grid;place-items:center;padding:0 5px}
+.tile:active{transform:scale(.96)}
+.tile.letters-tile .nm{font-weight:800;color:var(--cocoa)}
+
+/* add-ons */
+details.addons{margin:8px 16px;background:var(--card);border-radius:14px;border:1px solid var(--oat)}
+details.addons summary{padding:12px;cursor:pointer;font-weight:700;color:var(--cocoa)}
+details.addons .toggle{border:0;border-top:1px solid var(--oat);border-radius:0}
+footer{padding:22px 16px 10px;text-align:center;font-size:11.5px;color:var(--cocoa)}
+
+/* total bar: fixed on phones, part of the tray on laptops */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;justify-content:center;pointer-events:none}
+.bar > div{pointer-events:auto;width:100%;max-width:480px;background:var(--ink);color:#fff;display:flex;align-items:center;gap:12px;padding:10px 12px 10px 16px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+.bar .t{flex:1;min-width:0;line-height:1.2}
+.bar .t b{font-size:17px}
+.bar .t small{display:block;font-size:12px;color:#e9d6c2;min-height:15px}
+.bar .t small.free{color:var(--gold-hi);font-weight:700}
+.bar button{border:0;border-radius:12px;background:var(--gold-hi);color:var(--ink);font-weight:800;padding:11px 16px;cursor:pointer;white-space:nowrap}
+.bar button.quiet{background:rgba(255,255,255,.12);color:#fff}
+.flash{animation:flash .9s ease-out}
+@keyframes flash{0%{color:var(--gold-hi)}100%{color:#e9d6c2}}
+
+/* sheets: cart, checkout, order placed, letter picker */
+dialog{border:0;padding:0;width:100%;max-width:480px;margin:auto auto 0;max-height:92vh;border-radius:22px 22px 0 0;background:var(--card);color:var(--ink);overflow:auto;overscroll-behavior:contain}
+dialog::backdrop{background:rgba(61,42,33,.45)}
+.hd{position:sticky;top:0;z-index:1;background:var(--card);display:flex;align-items:center;gap:8px;padding:14px 16px 10px;border-bottom:1px solid var(--oat)}
+.hd h2,.hd h3{flex:1;margin:0;font:400 20px/1.2 var(--display)}
+.icon{flex:none;border:0;background:var(--linen);width:36px;height:36px;border-radius:999px;cursor:pointer;font-size:17px;color:var(--cocoa);display:grid;place-items:center}
+.bd{padding:14px 16px 20px}
+.step[hidden]{display:none}
+.bd svg.pic{width:100%;height:150px;display:block;background:var(--linen);border-radius:14px}
+.spec{margin:12px 0 4px;font-weight:700}
+.clist{list-style:none;margin:6px 0 12px;padding:0;display:grid;gap:6px}
+.clist li{display:flex;align-items:center;gap:10px;font-size:14px}
+.clist img,.clist .ico{width:30px;height:30px;object-fit:contain;background:var(--linen);border-radius:8px;flex:none;display:grid;place-items:center}
+.clist .q{margin-left:auto;color:var(--cocoa);font-weight:700}
+.lines{border-top:1px dashed var(--sand);padding-top:10px;display:grid;gap:4px;font-size:14px}
+.lines div{display:flex;justify-content:space-between;gap:12px}
+.lines .tot{font-weight:800;font-size:17px;border-top:1px solid var(--oat);padding-top:8px;margin-top:4px}
+.note{margin:14px 0 0;font-size:13px;background:var(--linen);border-radius:12px;padding:10px 12px;color:var(--cocoa)}
+.pv{margin:0 0 12px;font-size:12.5px;background:var(--oat);border-radius:10px;padding:8px 11px;color:var(--cocoa)}
+.primary{margin-top:14px;width:100%;border:0;border-radius:14px;padding:14px;background:var(--cocoa);color:#fff;font-weight:800;font-size:16px;cursor:pointer}
+.ghost{display:block;margin:10px auto 0;border:0;background:none;color:var(--clay);font-weight:700;font-size:13.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:6px}
+.msg{text-align:center;font-size:13px;color:var(--cocoa);min-height:20px;margin:2px 0 0}
+fieldset{border:0;padding:0;margin:14px 0 0;display:grid;gap:8px}
+legend{font-weight:800;margin-bottom:6px;color:var(--ink)}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--oat);border-radius:12px;padding:9px 11px;cursor:pointer;background:var(--linen)}
+.opt input{margin-top:3px;accent-color:var(--cocoa)}
+.opt small{display:block;color:var(--cocoa);font-size:12px}
+.f{display:grid;gap:3px;font-size:13px;font-weight:700;color:var(--cocoa)}
+.f input,.f select{border:1px solid var(--oat);border-radius:10px;padding:10px;background:#fff;font-weight:400;color:var(--ink);width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pays{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pays .opt{justify-content:center;font-weight:700;align-items:center}
+.pays .opt input{margin:0}
+
+/* order placed */
+.done-top{text-align:center;padding:6px 0 4px}
+.seal{width:58px;height:58px;margin:0 auto 8px;border-radius:999px;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold-hi),var(--gold));color:var(--ink);font-size:24px}
+.done-top h3{margin:0;font:400 24px var(--display)}
+.done-top p{margin:4px 0 0;color:var(--cocoa)}
+.team{margin-top:18px;border-top:1px dashed var(--sand);padding-top:14px}
+.team .lbl{margin:0 0 8px}
+.ordercard{border:1px solid var(--oat);border-radius:16px;background:#fff;overflow:hidden}
+.ordercard .oh{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;background:var(--linen);font-size:13px;font-weight:800}
+.ordercard .oh span:last-child{color:#6f7d55}
+.ordercard .ob{padding:10px 12px;display:grid;gap:6px;font-size:13.5px}
+.ordercard > svg{width:100%;height:120px;display:block}
+.clist .ico svg{display:block}
+.ordercard .row2{display:flex;justify-content:space-between;gap:10px}
+.ordercard .row2 span:first-child{color:var(--cocoa)}
+.why{margin:12px 0 0;font-size:13.5px}
+
+/* letter picker */
+.letters{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.letters button{border:1px solid var(--oat);background:var(--linen);border-radius:12px;padding:6px 4px 4px;cursor:pointer;display:grid;justify-items:center;font-weight:800;font-size:12px;color:var(--cocoa)}
+.letters img{height:52px;width:100%;object-fit:contain}
+.word{display:flex;gap:8px;margin:0 0 6px}
+.word input{flex:1;min-width:0;border:1px solid var(--oat);border-radius:12px;padding:11px 12px;background:#fff;font-weight:800;letter-spacing:.2em;text-transform:uppercase}
+.word button{border:0;border-radius:12px;background:var(--cocoa);color:#fff;font-weight:800;padding:0 16px;cursor:pointer}
+.small{margin:0 0 14px;font-size:12.5px;color:var(--cocoa)}
+.or{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--cocoa);margin:4px 0 10px}
+.or::before,.or::after{content:"";flex:1;border-top:1px solid var(--oat)}
+
+#selftest{position:fixed;inset:auto 8px 90px 8px;z-index:200;background:#fff;border:2px solid var(--cocoa);border-radius:12px;padding:10px;font:12px/1.4 ui-monospace,monospace;white-space:pre-wrap;max-height:50vh;overflow:auto}
+
+@media (max-width:340px){.grid{grid-template-columns:repeat(3,1fr)}.brand b{font-size:22px}.chip{font-size:12px}}
+
+/* laptop: a jewelry tray on the left, the charm bar on the right */
+@media (min-width:900px){
+  .app{max-width:1220px;padding-bottom:0;box-shadow:none}
+  .brand{justify-content:flex-start;padding:22px 40px 10px;gap:10px}
+  .brand b{font-size:32px}
+  .brand .tag{display:block;margin-left:auto;font:italic 400 14px var(--display);letter-spacing:0;text-transform:none;color:var(--cocoa)}
+  .layout{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:36px;padding:6px 40px 28px;align-items:start}
+  .left{display:block;position:sticky;top:18px}
+  .stage{position:relative;top:auto;border:1px solid var(--oat);border-radius:28px;background:var(--card);padding:20px;box-shadow:0 24px 60px -36px rgba(61,42,33,.45)}
+  .stage h1{font:400 26px/1.2 var(--display);color:var(--ink);text-align:left;padding:0 4px}
+  .stage h1 .cap{display:block;font:400 13px var(--body);color:var(--cocoa);margin-top:4px;min-height:18px}
+  .stage svg#chain{height:auto;aspect-ratio:360/178;margin:12px 0 14px;border-radius:20px;background:radial-gradient(ellipse at 50% 20%,#fff 0%,var(--linen) 75%)}
+  .hint{top:48%;font-size:19px}
+  .bar{position:static;display:block}
+  .bar > div{max-width:none;border-radius:18px;padding:14px 14px 14px 20px}
+  .bar .t b{font-size:22px}
+  .bar .t small{font-size:13px}
+  .bar button{padding:14px 24px;font-size:16px}
+  .chainbox{margin:0}
+  .chainbox summary{pointer-events:none;font:400 18px var(--display);padding:14px 14px 6px}
+  .chainbox .chg{display:none}
+  .trust{margin:10px 2px 0}
+  #charms{scroll-margin-top:0}
+  .tabs{top:0;padding:14px 0 10px;flex-wrap:wrap}
+  .grid{grid-template-columns:repeat(5,1fr);gap:10px;padding:4px 0 8px}
+  .tile:hover{box-shadow:0 0 0 1.5px var(--sand)}
+  details.addons{margin:12px 0}
+  dialog{margin:0 0 0 auto;height:100vh;max-height:100vh;width:460px;max-width:460px;border-radius:24px 0 0 24px}
+  dialog#letterPick{margin:auto;height:auto;max-height:90vh;width:520px;border-radius:22px}
+  .bd svg.pic{height:180px}
+}
+@media (prefers-reduced-motion:reduce){
+  .swing,.spark,.flash{animation:none}
+  .sp-draw{animation:none;stroke-dashoffset:0}
+  .sp-charm,.sp-in p{animation:none;opacity:1}
+}
+</style>
+</head>
+<body>
+<div id="splash" aria-hidden="true">
+  <div class="sp-in">
+    <svg viewBox="0 0 230 120">
+      <defs>
+        <linearGradient id="spg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4e2ac"/><stop offset=".5" stop-color="#c99a4a"/><stop offset="1" stop-color="#9c7233"/></linearGradient>
+        <mask id="spm"><path class="sp-draw" d="M 12 10 C 52 103, 178 103, 218 10" fill="none" stroke="#fff" stroke-width="10"/></mask>
+      </defs>
+      <path d="M 12 10 C 52 103, 178 103, 218 10" fill="none" stroke="url(#spg)" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="6 2.6" mask="url(#spm)"/>
+      <g class="sp-charm">
+        <circle cx="115" cy="82.4" r="3.4" fill="none" stroke="#9c7233" stroke-width="1.6"/>
+        <image href="charms/basic/basic-019.webp" x="101" y="84.4" width="28" height="28"/>
+      </g>
+    </svg>
+    <div class="sp-word"><b>solasta</b><span>jewelry bar</span></div>
+    <p>Laying out the charms</p>
+  </div>
+</div>
+
+<div class="app">
+  <div class="top">Order by 4 PM for same-day delivery in Metro Manila</div>
+  <div class="brand"><b>solasta</b><span>jewelry bar</span><span class="tag">Design your own charm jewelry</span></div>
+
+  <div class="layout">
+    <div class="left">
+      <section class="stage" aria-label="Your design">
+        <h1 id="pieceLabel"><span id="pieceName">Charm necklace</span> <span class="cap" id="pieceCap"></span></h1>
+        <svg id="chain" viewBox="0 0 360 178" role="img" aria-label="Preview of your chain and charms"></svg>
+        <div class="hint" id="hint">Tap a charm to hang it here</div>
+        <div class="bar"><div>
+          <div class="t"><b id="barTotal">₱0</b> <span id="barCount">· no charms yet</span><small id="barNote" aria-live="polite"></small></div>
+          <button type="button" id="go">Pick a charm</button>
+        </div></div>
+      </section>
+    </div>
+
+    <div class="right">
+      <details class="chainbox" id="chainbox">
+        <summary><span id="chainSum"></span><span class="chg">Change</span></summary>
+        <div class="controls">
+          <div class="seg" role="group" aria-label="Piece">
+            <button type="button" data-piece="necklace">Necklace</button>
+            <button type="button" data-piece="bracelet">Bracelet</button>
+          </div>
+          <p class="lbl">Chain</p>
+          <div class="styles" id="styles" role="group" aria-label="Chain style"></div>
+          <p class="stylenote" id="styleNote"></p>
+          <p class="lbl">Length</p>
+          <div class="lenrow" id="lengths" role="group" aria-label="Length"></div>
+          <label class="toggle"><span>Add a clasp charm<small>Optional. +₱50, hangs on the chain and takes one charm spot</small></span><input type="checkbox" id="clasp"></label>
+        </div>
+      </details>
+      <p class="trust">✦ Stainless: beach-proof and skin friendly</p>
+
+      <section id="charms" aria-label="Charms">
+        <nav class="tabs" id="tabs" role="tablist" aria-label="Charm categories"></nav>
+        <div class="grid" id="grid"></div>
+      </section>
+
+      <details class="addons">
+        <summary>Extras</summary>
+        <label class="toggle"><span>Extender<small>+₱20, adds a little length</small></span><input type="checkbox" id="extender"></label>
+      </details>
+    </div>
+  </div>
+
+  <footer>A mockup made for Solasta Jewelry Bar · charm photos from your catalog</footer>
+</div>
+
+<dialog id="cart" aria-labelledby="cartTitle">
+  <div class="step" data-step="cart">
+    <div class="hd"><h2 id="cartTitle">Your cart</h2><button class="icon" type="button" data-close aria-label="Close">✕</button></div>
+    <div class="bd">
+      <svg class="pic" id="chainCart" viewBox="0 0 360 178" role="img" aria-label="Your finished design"></svg>
+      <p class="spec" id="spec"></p>
+      <ul class="clist" id="clist"></ul>
+      <div class="lines" id="lines"></div>
+      <p class="note">Every piece is handmade, so yours might look a little different from this preview. We'll match your design as closely as we can.</p>
+      <button class="primary" type="button" id="toCheckout">Checkout</button>
+      <button class="ghost" type="button" data-close>Keep designing</button>
+      <button class="ghost" type="button" id="copy">Rather order by DM? Copy it for Instagram</button>
+      <p class="msg" id="copied" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="step" data-step="checkout" hidden>
+    <div class="hd"><button class="icon" type="button" data-back="cart" aria-label="Back to cart">‹</button><h2>Checkout</h2><button class="icon" type="button" data-close aria-label="Close">✕</button></div>
+    <div class="bd">
+      <p class="pv">Mockup preview. On the real site, this step is your Shopify checkout.</p>
+      <fieldset>
+        <legend>Contact</legend>
+        <label class="f">Name<input id="fName" autocomplete="name"></label>
+        <label class="f">Contact number<input id="fPhone" inputmode="tel" autocomplete="tel"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Delivery</legend>
+        <label class="opt"><input type="radio" name="ship" value="mm" checked><span>Metro Manila, LBC · ₱90<small>2 to 7 business days</small></span></label>
+        <label class="opt"><input type="radio" name="ship" value="sd"><span>Metro Manila, same-day · ₱300–320<small>Order by 4 PM</small></span></label>
+        <label class="opt"><input type="radio" name="ship" value="out"><span>Outside Metro Manila · ₱150<small>2 to 7 business days</small></span></label>
+        <label class="opt"><input type="radio" name="ship" value="intl"><span>International<small>Message us for the rate</small></span></label>
+        <label class="f">Address<input id="fAddr" autocomplete="street-address"></label>
+        <div class="two">
+          <label class="f">Barangay<input id="fBrgy"></label>
+          <label class="f">Zip code<input id="fZip" inputmode="numeric" autocomplete="postal-code"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Payment</legend>
+        <div class="pays" id="pays"></div>
+      </fieldset>
+      <div class="lines" id="coLines" style="margin-top:16px"></div>
+      <button class="primary" type="button" id="place">Place order</button>
+      <p class="msg" id="coMsg" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="step" data-step="done" hidden>
+    <div class="hd"><h2>Order placed</h2><button class="icon" type="button" data-close aria-label="Close">✕</button></div>
+    <div class="bd">
+      <div class="done-top"><div class="seal">✦</div><h3 id="thanks">Thank you!</h3><p>We'll start making your piece.</p></div>
+      <div class="team">
+        <p class="lbl">For the Solasta team: what lands in Shopify</p>
+        <div class="ordercard">
+          <div class="oh"><span>New order · example</span><span id="ocPaid">Paid</span></div>
+          <svg id="chainDone" viewBox="0 0 360 178" role="img" aria-label="The customer's design"></svg>
+          <div class="ob" id="ocBody"></div>
+        </div>
+        <p class="why">The design comes in as a normal order, with the charm list and picture attached. No screenshots, no pricing by hand in the DMs.</p>
+      </div>
+      <button class="primary" type="button" id="again">Design another piece</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="letterPick" aria-labelledby="lpTitle">
+  <div class="hd"><h3 id="lpTitle">Add letters</h3><button class="icon" type="button" id="lpClose" aria-label="Close">✕</button></div>
+  <div class="bd">
+    <form class="word" id="wordForm">
+      <input id="wordIn" maxlength="10" placeholder="Type a name" aria-label="Type a name or initials" autocomplete="off" autocapitalize="characters">
+      <button type="submit">Add</button>
+    </form>
+    <p class="small" id="wordMsg"></p>
+    <p class="or">or pick one</p>
+    <div class="letters" id="letters"></div>
+  </div>
+</dialog>
+
+<script>
+/* ---- data: written by scripts/inline_data.py, don't edit by hand ---- */
+const RULES = /*DATA:RULES*/{"source":"SPEC.md section 3, read from Solasta's Jewelry Bar Canva catalog (Jul 2026; 3-charm price re-checked live 2026-10-28)","currency":"PHP","bundle":{"1":350,"3":550,"5":690,"7":820,"9":990,"11":1150},"bundle_note":"Tiers only at odd counts; even counts round up to the next tier.","per_charm_after_11":150,"tier_delta":{"basic":0,"premium50":50,"premium80":80},"clasp":{"price":50,"uses_charm_slot":true},"long_chain":{"over_inches":20,"price":50},"addons":{"extender":20},"lengths":{"necklace":[15,16,18,20,22,24],"bracelet":[6.5]},"defaults":{"necklace":16,"clasp_necklace":20,"bracelet":6.5},"styles":{"figaro":{"thin":"bestseller","medium":null,"thick":null},"paperclip":{"thin":null,"medium":"bestseller","thick":null}},"shipping":{"metro_manila_lbc":90,"outside_metro_manila":150,"same_day_metro_manila":"300-320","same_day_cutoff":"4:00 PM","international":"DM"},"payment":["BDO","BPI","GCash"],"conflicts":[{"what":"3 charms","canva":550,"shopify_charm_necklace":520,"used":550,"note":"Ask the founder which is right."}],"known_ambiguity":"Catalog's 7-charm sample (2 basic, 5 premium) shows 820 + 330, which doesn't resolve from +50/+80. Engine follows the documented rules."}/*END*/;
+const CHARMS = /*DATA:CHARMS*/[{"id":"b-022","file":"basic/basic-022.webp","name":"gold starfish","category":"ocean","tier":"basic","w":169,"h":170},{"id":"b-023","file":"basic/basic-023.webp","name":"silver starfish","category":"ocean","tier":"basic","w":169,"h":170},{"id":"b-005","file":"basic/basic-005.webp","name":"gold scallop shell","category":"ocean","tier":"basic","w":195,"h":192},{"id":"b-003","file":"basic/basic-003.webp","name":"silver scallop shell","category":"ocean","tier":"basic","w":188,"h":190},{"id":"b-071","file":"basic/basic-071.webp","name":"gold crab","category":"ocean","tier":"basic","bail":[0.5,0.86],"w":219,"h":206},{"id":"b-070","file":"basic/basic-070.webp","name":"silver crab","category":"ocean","tier":"basic","bail":[0.5,0.86],"w":219,"h":206},{"id":"b-029","file":"basic/basic-029.webp","name":"gold seahorse","category":"ocean","tier":"basic","w":121,"h":125},{"id":"b-065","file":"basic/basic-065.webp","name":"gold anchor","category":"ocean","tier":"basic","w":102,"h":133},{"id":"p50-009","file":"premium-50/premium50-009.webp","name":"gold sea turtle","category":"ocean","tier":"premium50","w":97,"h":129},{"id":"p50-008","file":"premium-50/premium50-008.webp","name":"silver sea turtle","category":"ocean","tier":"premium50","w":96,"h":129},{"id":"p50-139","file":"premium-50/premium50-139.webp","name":"teal enamel starfish","category":"ocean","tier":"premium50","w":105,"h":116},{"id":"p50-137","file":"premium-50/premium50-137.webp","name":"rainbow enamel fish","category":"ocean","tier":"premium50","w":137,"h":158},{"id":"p80-027","file":"premium-80/premium80-027.webp","name":"blue green koi fish","category":"ocean","tier":"premium80","bail":[0.08,0.06],"w":159,"h":136},{"id":"p80-020","file":"premium-80/premium80-020.webp","name":"pearl stingray","category":"ocean","tier":"premium80","w":211,"h":220},{"id":"b-020","file":"basic/basic-020.webp","name":"gold sun face","category":"zodiac-cosmos","tier":"basic","w":110,"h":112},{"id":"b-025","file":"basic/basic-025.webp","name":"silver sun","category":"zodiac-cosmos","tier":"basic","w":112,"h":116},{"id":"b-052","file":"basic/basic-052.webp","name":"gold crescent moon","category":"zodiac-cosmos","tier":"basic","bail":[0.62,0.05],"w":101,"h":116},{"id":"b-051","file":"basic/basic-051.webp","name":"silver crescent moon","category":"zodiac-cosmos","tier":"basic","bail":[0.6,0.05],"w":101,"h":115},{"id":"b-059","file":"basic/basic-059.webp","name":"gold star","category":"zodiac-cosmos","tier":"basic","w":106,"h":114},{"id":"b-054","file":"basic/basic-054.webp","name":"silver star","category":"zodiac-cosmos","tier":"basic","w":111,"h":129},{"id":"b-030","file":"basic/basic-030.webp","name":"gold sun and moon coin","category":"zodiac-cosmos","tier":"basic","w":112,"h":116},{"id":"p50-013","file":"premium-50/premium50-013.webp","name":"gold moon coin with crystals","category":"zodiac-cosmos","tier":"premium50","w":194,"h":220},{"id":"p50-071","file":"premium-50/premium50-071.webp","name":"gold sparkle star","category":"zodiac-cosmos","tier":"premium50","w":162,"h":220},{"id":"p50-041","file":"premium-50/premium50-041.webp","name":"black enamel moon tag","category":"zodiac-cosmos","tier":"premium50","w":101,"h":177},{"id":"b-019","file":"basic/basic-019.webp","name":"gold puffy heart","category":"love-hearts","tier":"basic","w":99,"h":97},{"id":"b-016","file":"basic/basic-016.webp","name":"silver puffy heart","category":"love-hearts","tier":"basic","w":96,"h":99},{"id":"p50-057","file":"premium-50/premium50-057.webp","name":"gold heart padlock","category":"love-hearts","tier":"premium50","w":123,"h":177},{"id":"p50-058","file":"premium-50/premium50-058.webp","name":"silver heart padlock","category":"love-hearts","tier":"premium50","bail":[0.32,0.02],"w":111,"h":146},{"id":"p50-034","file":"premium-50/premium50-034.webp","name":"gold sunburst heart","category":"love-hearts","tier":"premium50","w":218,"h":220},{"id":"p50-033","file":"premium-50/premium50-033.webp","name":"crystal heart","category":"love-hearts","tier":"premium50","w":119,"h":164},{"id":"p50-084","file":"premium-50/premium50-084.webp","name":"pink opal drip heart","category":"love-hearts","tier":"premium50","w":145,"h":220},{"id":"p80-037","file":"premium-80/premium80-037.webp","name":"red sacred heart","category":"love-hearts","tier":"premium80","w":158,"h":220},{"id":"p80-004","file":"premium-80/premium80-004.webp","name":"pink enamel heart","category":"love-hearts","tier":"premium80","bail":[0.5,0.15],"w":122,"h":109},{"id":"p50-069","file":"premium-50/premium50-069.webp","name":"gold bow","category":"love-hearts","tier":"premium50","bail":[0.5,0.2],"w":107,"h":91},{"id":"p50-077","file":"premium-50/premium50-077.webp","name":"silver bow","category":"love-hearts","tier":"premium50","bail":[0.5,0.2],"w":106,"h":91},{"id":"b-067","file":"basic/basic-067.webp","name":"blue evil eye","category":"luck-protection","tier":"basic","w":77,"h":101},{"id":"b-066","file":"basic/basic-066.webp","name":"white evil eye bead","category":"luck-protection","tier":"basic","bail":[0.18,0.88],"w":62,"h":77},{"id":"b-058","file":"basic/basic-058.webp","name":"gold four leaf clover","category":"luck-protection","tier":"basic","w":100,"h":114},{"id":"b-053","file":"basic/basic-053.webp","name":"silver four leaf clover","category":"luck-protection","tier":"basic","w":108,"h":133},{"id":"p50-031","file":"premium-50/premium50-031.webp","name":"crystal eye","category":"luck-protection","tier":"premium50","w":154,"h":169},{"id":"p50-064","file":"premium-50/premium50-064.webp","name":"blue enamel evil eye","category":"luck-protection","tier":"premium50","w":205,"h":220},{"id":"p50-109","file":"premium-50/premium50-109.webp","name":"evil eye sunburst","category":"luck-protection","tier":"premium50","w":120,"h":101},{"id":"p80-043","file":"premium-80/premium80-043.webp","name":"pink enamel eye heart","category":"luck-protection","tier":"premium80","bail":[0.83,0.15],"w":110,"h":89},{"id":"b-010","file":"basic/basic-010.webp","name":"red chili pepper","category":"luck-protection","tier":"basic","bail":[0.25,0.05],"w":140,"h":123},{"id":"p50-022","file":"premium-50/premium50-022.webp","name":"pearl cross","category":"luck-protection","tier":"premium50","w":152,"h":220},{"id":"p50-175","file":"premium-50/premium50-175.webp","name":"gold hamsa hand","category":"luck-protection","tier":"premium50","bail":[0.27,0.04],"w":142,"h":220},{"id":"p50-174","file":"premium-50/premium50-174.webp","name":"silver hamsa hand","category":"luck-protection","tier":"premium50","bail":[0.27,0.04],"w":142,"h":220},{"id":"b-021","file":"basic/basic-021.webp","name":"gold daisy","category":"flowers-nature","tier":"basic","w":207,"h":220},{"id":"b-043","file":"basic/basic-043.webp","name":"silver daisy","category":"flowers-nature","tier":"basic","w":112,"h":127},{"id":"p50-012","file":"premium-50/premium50-012.webp","name":"gold flower","category":"flowers-nature","tier":"premium50","w":174,"h":162},{"id":"p50-017","file":"premium-50/premium50-017.webp","name":"blue enamel flower","category":"flowers-nature","tier":"premium50","w":220,"h":207},{"id":"p50-018","file":"premium-50/premium50-018.webp","name":"pink enamel flower","category":"flowers-nature","tier":"premium50","w":220,"h":206},{"id":"p50-019","file":"premium-50/premium50-019.webp","name":"plum enamel flower","category":"flowers-nature","tier":"premium50","w":220,"h":204},{"id":"p80-006","file":"premium-80/premium80-006.webp","name":"pink butterfly","category":"flowers-nature","tier":"premium80","bail":[0.52,0.3],"w":127,"h":98},{"id":"p80-007","file":"premium-80/premium80-007.webp","name":"lilac butterfly","category":"flowers-nature","tier":"premium80","bail":[0.52,0.3],"w":122,"h":96},{"id":"p50-156","file":"premium-50/premium50-156.webp","name":"gold butterfly","category":"flowers-nature","tier":"premium50","w":220,"h":185},{"id":"p80-013","file":"premium-80/premium80-013.webp","name":"teal dragonfly","category":"flowers-nature","tier":"premium80","w":220,"h":169},{"id":"p50-097","file":"premium-50/premium50-097.webp","name":"gold palm tree","category":"flowers-nature","tier":"premium50","w":122,"h":198},{"id":"p50-144","file":"premium-50/premium50-144.webp","name":"green palm tree","category":"flowers-nature","tier":"premium50","w":196,"h":220},{"id":"p80-010","file":"premium-80/premium80-010.webp","name":"gold monstera leaf","category":"flowers-nature","tier":"premium80","bail":[0.3,0.03],"w":174,"h":220},{"id":"b-002","file":"basic/basic-002.webp","name":"gold elephant","category":"animals","tier":"basic","w":146,"h":136},{"id":"b-004","file":"basic/basic-004.webp","name":"silver elephant","category":"animals","tier":"basic","w":146,"h":136},{"id":"p50-001","file":"premium-50/premium50-001.webp","name":"gold balloon dog","category":"animals","tier":"premium50","bail":[0.42,0.01],"w":165,"h":189},{"id":"p50-002","file":"premium-50/premium50-002.webp","name":"silver balloon dog","category":"animals","tier":"premium50","w":96,"h":102},{"id":"p80-057","file":"premium-80/premium80-057.webp","name":"silver teddy bear","category":"animals","tier":"premium80","w":125,"h":220},{"id":"p80-086","file":"premium-80/premium80-086.webp","name":"green crystal bear","category":"animals","tier":"premium80","w":97,"h":180},{"id":"p80-072","file":"premium-80/premium80-072.webp","name":"red ladybug","category":"animals","tier":"premium80","w":99,"h":119},{"id":"p80-056","file":"premium-80/premium80-056.webp","name":"enamel elephant","category":"animals","tier":"premium80","w":189,"h":154},{"id":"p50-015","file":"premium-50/premium50-015.webp","name":"gold paw print","category":"animals","tier":"premium50","bail":[0.92,0.42],"w":77,"h":59},{"id":"p50-127","file":"premium-50/premium50-127.webp","name":"orange slice","category":"food-fun","tier":"premium50","w":110,"h":131},{"id":"p50-147","file":"premium-50/premium50-147.webp","name":"yellow lemon","category":"food-fun","tier":"premium50","bail":[0.18,0.88],"w":75,"h":92},{"id":"p80-084","file":"premium-80/premium80-084.webp","name":"fried egg","category":"food-fun","tier":"premium80","w":130,"h":190},{"id":"p80-081","file":"premium-80/premium80-081.webp","name":"cheese wedge","category":"food-fun","tier":"premium80","bail":[0.32,0.04],"w":76,"h":156},{"id":"p50-083","file":"premium-50/premium50-083.webp","name":"red crystal cherries","category":"food-fun","tier":"premium50","w":107,"h":112},{"id":"p50-035","file":"premium-50/premium50-035.webp","name":"avocado","category":"food-fun","tier":"premium50","w":110,"h":134},{"id":"p80-091","file":"premium-80/premium80-091.webp","name":"gold pretzel","category":"food-fun","tier":"premium80","bail":[0.72,0.04],"w":150,"h":167},{"id":"p80-087","file":"premium-80/premium80-087.webp","name":"pink wine glass","category":"food-fun","tier":"premium80","bail":[0.72,0.04],"w":97,"h":180},{"id":"p80-085","file":"premium-80/premium80-085.webp","name":"martini glass","category":"food-fun","tier":"premium80","bail":[0.72,0.03],"w":121,"h":193},{"id":"p80-050","file":"premium-80/premium80-050.webp","name":"red mushroom","category":"food-fun","tier":"premium80","bail":[0.22,0.06],"w":161,"h":182},{"id":"p80-088","file":"premium-80/premium80-088.webp","name":"domino","category":"food-fun","tier":"premium80","w":65,"h":167},{"id":"b-094","file":"basic/basic-094.webp","name":"camera","category":"food-fun","tier":"basic","w":181,"h":139},{"id":"p50-072","file":"premium-50/premium50-072.webp","name":"gold crown","category":"food-fun","tier":"premium50","bail":[0.08,0.08],"w":109,"h":90},{"id":"p50-096","file":"premium-50/premium50-096.webp","name":"gold key","category":"food-fun","tier":"premium50","w":119,"h":177},{"id":"p50-167","file":"premium-50/premium50-167.webp","name":"gold cowboy boot","category":"food-fun","tier":"premium50","w":173,"h":220},{"id":"p80-078","file":"premium-80/premium80-078.webp","name":"crystal letter","category":"letters","tier":"premium80","variant_set":true,"variant_type":"letter","variant_options":["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"],"variant_files":"letters/crystal-{v}.webp","w":220,"h":206}]/*END*/;
+/* -------------------------------------------------------------------- */
+
+const CATS = [
+  ["love-hearts","Love"],["letters","Letters"],["luck-protection","Luck"],["zodiac-cosmos","Sun & moon"],
+  ["ocean","Ocean"],["animals","Animals"],["flowers-nature","Flowers"],["food-fun","Food & fun"]
+];
+const STYLE_NOTES = {
+  "figaro-thin":"Dainty. Lets a few charms shine.",
+  "figaro-medium":"A little bolder, holds a fuller set.",
+  "figaro-thick":"A statement chain for lots of charms.",
+  "paperclip-thin":"Light and airy, with a modern look.",
+  "paperclip-medium":"The everyday paperclip. Room for plenty of charms.",
+  "paperclip-thick":"Chunky and bold."
+};
+const byId = Object.fromEntries(CHARMS.map(c => [c.id, c]));
+const peso = n => "₱" + n.toLocaleString("en-PH");
+const cap = w => w[0].toUpperCase() + w.slice(1);
+const LETTERS = CHARMS.find(c => c.variant_set);
+
+let state = { piece:"necklace", style:"figaro", thickness:"thin", length:RULES.defaults.necklace,
+              clasp:false, extender:false, charms:[], tab:"love-hearts", pay:RULES.payment.includes("GCash") ? "GCash" : RULES.payment[0] };
+
+/* ---------- pricing (pure) ---------- */
+function bundlePrice(n){
+  if (n <= 0) return 0;
+  if (n > 11) return RULES.bundle["11"] + (n - 11) * RULES.per_charm_after_11;
+  const odd = n % 2 ? n : n + 1;
+  return RULES.bundle[String(odd)];
+}
+function price(s){
+  const slots = s.charms.length + (s.clasp ? 1 : 0);
+  const lines = [];
+  const bundle = bundlePrice(slots);
+  if (slots) lines.push([`${slots} charm ${slots === 1 ? "spot" : "spots"}`, bundle]);
+  const up = s.charms.reduce((a, c) => a + RULES.tier_delta[byId[c.id].tier], 0);
+  if (up) lines.push(["Premium charm upgrades", up]);
+  if (s.clasp) lines.push(["Clasp charm", RULES.clasp.price]);
+  if (s.piece === "necklace" && s.length > RULES.long_chain.over_inches) lines.push([`Chain over ${RULES.long_chain.over_inches}"`, RULES.long_chain.price]);
+  if (s.extender) lines.push(["Extender", RULES.addons.extender]);
+  return { slots, bundle, lines, total: lines.reduce((a, l) => a + l[1], 0) };
+}
+// An even number of spots is priced as the next odd tier, so one more spot costs nothing.
+const freeSpot = p => p.slots > 0 && p.slots < 11 && p.slots % 2 === 0;
+const SHIP = { mm:[90,90,"Metro Manila, LBC"], sd:[300,320,"Metro Manila, same-day"], out:[150,150,"Outside Metro Manila"], intl:[0,0,"International (rate by DM)"] };
+
+/* ---------- chain drawing ---------- */
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const PATHS = { necklace:"M 6 4 C 40 138, 320 138, 354 4", bracelet:"M 22 30 C 70 118, 290 118, 338 30" };
+const THICK = { thin:1, medium:1.35, thick:1.75 };
+
+function drawLinks(parent, path, L, style, k, stroke){
+  const links = el("g", { fill:"none", stroke, "stroke-linecap":"round" }, parent);
+  let d = 0, i = 0;
+  while (d < L) {
+    let len, w;
+    if (style === "paperclip") { len = 13 * k; w = 4.2 * k; }
+    else { const long = i % 4 === 3; len = (long ? 10 : 5.2) * k; w = 4.6 * k; }
+    const mid = Math.min(d + len / 2, L);
+    const p = path.getPointAtLength(mid), q = path.getPointAtLength(Math.min(mid + 0.5, L));
+    const ang = Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI;
+    const flat = i % 2 === 1;
+    el("rect", { x: -len / 2, y: flat ? -0.6 * k : -w / 2, width: len, height: flat ? 1.2 * k : w,
+                 rx: flat ? 0.6 * k : w / 2, "stroke-width": flat ? 1.1 * k : 1.25 * k,
+                 transform: `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${ang.toFixed(1)})` }, links);
+    d += len * 0.82; i++;
+  }
+}
+function claspShape(parent, x, y, s, stroke){
+  el("circle", { cx:x, cy:y + 2.5 * s, r:2.6 * s, fill:"none", stroke, "stroke-width":1.4 * s }, parent);
+  el("rect", { x:x - 3.6 * s, y:y + 5 * s, width:7.2 * s, height:13 * s, rx:3.6 * s, fill:"none", stroke, "stroke-width":2 * s }, parent);
+  el("rect", { x:x + 1.2 * s, y:y + 9 * s, width:3.2 * s, height:4 * s, rx:1 * s, fill:"var(--gold)" }, parent);
+}
+function gradient(svg){
+  const defs = el("defs", {}, svg);
+  const g = el("linearGradient", { id: svg.id + "g", x1:0, y1:0, x2:1, y2:1 }, defs);
+  [["0","var(--gold-hi)"],["0.5","var(--gold)"],["1","var(--gold-lo)"]].forEach(([o,c]) => el("stop", { offset:o, "stop-color":c }, g));
+  return `url(#${svg.id}g)`;
+}
+const charmSrc = sel => "charms/" + (sel.variant ? byId[sel.id].variant_files.replace("{v}", sel.variant) : byId[sel.id].file);
+
+function drawChain(svg, s, opts){
+  svg.innerHTML = "";
+  const gold = gradient(svg);
+  const path = el("path", { d: PATHS[s.piece], fill:"none", stroke:"none" }, svg);
+  const L = path.getTotalLength();
+  drawLinks(svg, path, L, s.style, THICK[s.thickness], gold);
+
+  // slots: charms in tap order, clasp sits in the middle
+  const items = s.charms.map((c, idx) => ({ type:"charm", c, idx }));
+  if (s.clasp) items.splice(Math.floor(items.length / 2), 0, { type:"clasp" });
+  const n = items.length;
+  if (!n) return;
+  const span = Math.min(0.86, 0.26 + n * 0.055);
+  const size = Math.max(20, Math.min(38, (L * span) / n * 0.95));
+  items.forEach((it, j) => {
+    const t = 0.5 - span / 2 + span * (j + 0.5) / n;
+    const p = path.getPointAtLength(t * L);
+    const grp = el("g", {}, svg);
+    grp.style.transformOrigin = `${p.x}px ${p.y}px`;
+    if (it.type === "clasp") { claspShape(grp, p.x, p.y, 1.55, gold); return; }
+    const c = byId[it.c.id];
+    const ratio = it.c.variant ? 1.15 : (c.h / c.w);
+    const w = it.c.variant ? size * 0.95 : (ratio > 1.2 ? size / ratio * 1.2 : size);
+    const h = Math.min(size * 1.25, w * ratio);
+    // fit the photo in the w x h box, then turn it so it hangs from its own loop (c.bail)
+    const cw = it.c.variant ? 32 : c.w, ch = it.c.variant ? 45 : c.h;
+    const k = Math.min(w / cw, h / ch), dw = cw * k, dh = ch * k;
+    const [fx, fy] = it.c.variant ? [0.5, 0.02] : (c.bail || [0.5, 0.03]);
+    const bx = fx * dw, by = fy * dh;
+    let rot = -90 - Math.atan2(by - dh / 2, bx - dw / 2) * 180 / Math.PI;
+    rot = ((rot + 540) % 360) - 180;
+    if (Math.abs(rot) < 8) rot = 0;
+    const ay = p.y + 4.8;
+    // jump ring loops over the chain; the charm's loop tucks into its bottom
+    el("circle", { class:"ring", cx:p.x, cy:p.y + 2.6, r:3.3, fill:"none", stroke:"var(--gold-lo)", "stroke-width":1.5 }, grp);
+    el("image", { href:charmSrc(it.c), x:p.x - bx, y:ay - by, width:dw, height:dh,
+                  transform: rot ? `rotate(${rot.toFixed(1)} ${p.x.toFixed(1)} ${ay.toFixed(1)})` : "" }, grp);
+    if (opts.interactive) {
+      grp.setAttribute("class", "charm-on-chain");
+      grp.setAttribute("tabindex", "0");
+      grp.setAttribute("role", "button");
+      grp.setAttribute("aria-label", "Take off " + charmName(it.c));
+      const rm = () => removeAt(it.idx);
+      grp.addEventListener("click", rm);
+      grp.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); rm(); } });
+      if (opts.justAdded === it.idx) {
+        grp.classList.add("swing");
+        const sp = el("text", { x:p.x + w / 2, y:p.y + 6, "font-size":11, fill:"var(--gold-lo)", class:"spark" }, svg);
+        sp.textContent = "✦";
+      }
+    }
+  });
+}
+// Tiny chain swatch for each style chip.
+function swatch(style, th){
+  const svg = el("svg", { viewBox:"0 0 100 14", "aria-hidden":"true", id:"sw-" + style + th });
+  const path = el("path", { d:"M 2 7 L 98 7", fill:"none", stroke:"none" }, svg);
+  drawLinks(svg, path, path.getTotalLength(), style, THICK[th] * 1.25, gradient(svg));
+  return svg;
+}
+
+/* ---------- UI ---------- */
+const $ = id => document.getElementById(id);
+const charmName = sel => { const c = byId[sel.id]; return sel.variant ? `${c.name} ${sel.variant}` : c.name; };
+const badge = tier => tier === "basic" ? `<span class="badge inc">Included</span>` : `<span class="badge">+₱${RULES.tier_delta[tier]}</span>`;
+const specText = () => `${state.clasp ? "Clasp charm" : "Charm"} ${state.piece} · ${cap(state.style)} ${state.thickness} · ${state.length}"`;
+
+function renderControls(){
+  document.querySelectorAll("[data-piece]").forEach(b => b.setAttribute("aria-pressed", b.dataset.piece === state.piece));
+  $("pieceName").textContent = (state.clasp ? "Clasp charm " : "Charm ") + state.piece;
+  $("pieceCap").textContent = state.charms.length ? "Tap a charm on the chain to take it off" : "";
+  const sty = $("styles"); sty.innerHTML = "";
+  for (const style in RULES.styles) for (const th in RULES.styles[style]) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip";
+    b.setAttribute("aria-pressed", state.style === style && state.thickness === th);
+    const best = RULES.styles[style][th] === "bestseller";
+    b.appendChild(swatch(style, th));
+    b.insertAdjacentHTML("beforeend", `${cap(style)} ${th}<small class="${best ? "best" : ""}">${best ? "★ Bestseller" : "&nbsp;"}</small>`);
+    b.onclick = () => { state.style = style; state.thickness = th; update(); };
+    sty.appendChild(b);
+  }
+  $("styleNote").textContent = STYLE_NOTES[`${state.style}-${state.thickness}`];
+  const lr = $("lengths"); lr.innerHTML = "";
+  RULES.lengths[state.piece].forEach(len => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip";
+    b.setAttribute("aria-pressed", state.length === len);
+    const extra = state.piece === "necklace" && len > RULES.long_chain.over_inches;
+    b.innerHTML = `${len}"<small>${extra ? `+₱${RULES.long_chain.price}` : "&nbsp;"}</small>`;
+    b.onclick = () => { state.length = len; update(); };
+    lr.appendChild(b);
+  });
+  $("clasp").checked = state.clasp;
+  $("extender").checked = state.extender;
+  $("chainSum").textContent = `${cap(state.piece)} · ${cap(state.style)} ${state.thickness} · ${state.length}"${state.clasp ? " · clasp" : ""}`;
+}
+const setStageH = () => document.documentElement.style.setProperty("--stageH", document.querySelector(".stage").offsetHeight + "px");
+new ResizeObserver(setStageH).observe(document.querySelector(".stage"));
+
+function renderTabs(){
+  const tabs = $("tabs"); tabs.innerHTML = "";
+  CATS.forEach(([key, label]) => {
+    if (!CHARMS.some(c => c.category === key)) return;
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "tab"; b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", state.tab === key);
+    b.textContent = label;
+    b.onclick = () => { state.tab = key; renderTabs(); renderGrid(); };
+    tabs.appendChild(b);
+  });
+}
+
+function renderGrid(){
+  const grid = $("grid"); grid.innerHTML = "";
+  CHARMS.filter(c => c.category === state.tab).forEach(c => {
+    const count = state.charms.filter(s => s.id === c.id).length;
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "tile" + (c.variant_set ? " letters-tile" : "");
+    b.setAttribute("aria-label", c.variant_set ? `Add ${c.name}s, A to Z, plus ${RULES.tier_delta[c.tier]} pesos each` : `Add ${c.name}, ${c.tier === "basic" ? "included" : "plus " + RULES.tier_delta[c.tier] + " pesos"}`);
+    b.innerHTML = `<img src="charms/${c.file}" alt="" loading="lazy"><span class="nm">${c.variant_set ? "A to Z, or type a name" : c.name}</span>${badge(c.tier)}${count ? `<span class="count">${count}</span>` : ""}`;
+    b.onclick = () => c.variant_set ? openLetters() : add([{ id:c.id }]);
+    grid.appendChild(b);
+  });
+}
+
+/* letters: pick one, or type a name and add them all in order */
+function openLetters(){
+  const box = $("letters"); box.innerHTML = "";
+  LETTERS.variant_options.forEach(v => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = `<img src="charms/${LETTERS.variant_files.replace("{v}", v)}" alt="">${v}`;
+    b.setAttribute("aria-label", "Letter " + v);
+    b.onclick = () => { $("letterPick").close(); add([{ id:LETTERS.id, variant:v }]); };
+    box.appendChild(b);
+  });
+  $("wordIn").value = ""; wordMsg();
+  $("letterPick").showModal();
+}
+const wordLetters = () => $("wordIn").value.toUpperCase().split("").filter(ch => LETTERS.variant_options.includes(ch));
+function wordMsg(){
+  const n = wordLetters().length, d = RULES.tier_delta[LETTERS.tier];
+  $("wordMsg").textContent = n ? `${n} letter${n > 1 ? "s" : ""}, ${n} charm spot${n > 1 ? "s" : ""} · +₱${n * d} in upgrades` : `Crystal letters · +₱${d} each · each letter takes one charm spot`;
+}
+$("wordIn").oninput = wordMsg;
+$("wordForm").onsubmit = e => {
+  e.preventDefault();
+  const ls = wordLetters();
+  if (!ls.length) { $("wordMsg").textContent = "Type letters A to Z, like MIA or your initials."; $("wordIn").focus(); return; }
+  $("letterPick").close();
+  add(ls.map(v => ({ id:LETTERS.id, variant:v })), ls.join(""));
+};
+$("lpClose").onclick = () => $("letterPick").close();
+
+let justAdded = null, note = "";
+function add(sels, label){
+  const before = price(state);
+  state.charms.push(...sels);
+  justAdded = state.charms.length - 1;
+  const after = price(state);
+  const up = sels.reduce((a, s) => a + RULES.tier_delta[byId[s.id].tier], 0);
+  if (sels.length === 1 && before.bundle === after.bundle && before.slots > 0)
+    note = up ? `Spot is free, only the +₱${up} premium` : "This one's free ✦";
+  else note = `Added ${label || charmName(sels[0])}`;
+  update(true);
+}
+function removeAt(idx){
+  const [gone] = state.charms.splice(idx, 1);
+  justAdded = null; note = `Took off ${charmName(gone)}`;
+  update(true);
+}
+
+/* ---------- cart, checkout, order placed ---------- */
+function groups(){
+  const gs = [];
+  state.charms.forEach(s => {
+    const key = s.id + (s.variant || "");
+    const g = gs.find(x => x.key === key);
+    g ? g.q++ : gs.push({ key, s, q:1 });
+  });
+  return gs;
+}
+const CLASP_ICON = `<svg viewBox="-8 -2 16 24" width="22" height="26" aria-hidden="true"><circle cx="0" cy="2.5" r="2.6" fill="none" stroke="#c99a4a" stroke-width="1.4"/><rect x="-3.6" y="5" width="7.2" height="13" rx="3.6" fill="none" stroke="#c99a4a" stroke-width="2"/></svg>`;
+function listHTML(){
+  const items = groups().map(({ s, q }) => {
+    const c = byId[s.id];
+    return `<li><img src="${charmSrc(s)}" alt="">${charmName(s)} ${c.tier === "basic" ? "" : `<span class="badge">+₱${RULES.tier_delta[c.tier]}</span>`}<span class="q">×${q}</span></li>`;
+  });
+  if (state.clasp) items.push(`<li><span class="ico">${CLASP_ICON}</span>Clasp charm <span class="badge">+₱${RULES.clasp.price}</span><span class="q">×1</span></li>`);
+  return items.join("");
+}
+function shipInfo(p){
+  const ship = SHIP[document.querySelector("[name=ship]:checked").value];
+  const shipTxt = ship[1] === 0 ? "by DM" : ship[0] === ship[1] ? peso(ship[0]) : `${peso(ship[0])}–${ship[1]}`;
+  const totTxt = ship[1] === 0 ? `${peso(p.total)} + shipping` : ship[0] === ship[1] ? peso(p.total + ship[0]) : `${peso(p.total + ship[0])}–${(p.total + ship[1]).toLocaleString("en-PH")}`;
+  return { ship, shipTxt, totTxt };
+}
+const lineHTML = p => p.lines.map(([l, v]) => `<div><span>${l}</span><span>${peso(v)}</span></div>`).join("");
+
+function renderCart(){
+  const p = price(state);
+  drawChain($("chainCart"), state, { interactive:false });
+  $("spec").textContent = specText();
+  $("clist").innerHTML = listHTML();
+  $("lines").innerHTML = lineHTML(p) + `<div class="tot"><span>Subtotal</span><span>${peso(p.total)}</span></div>`;
+  $("toCheckout").textContent = `Checkout · ${peso(p.total)}`;
+}
+function renderCheckout(){
+  const p = price(state), sh = shipInfo(p);
+  $("coLines").innerHTML = `<div><span>Subtotal</span><span>${peso(p.total)}</span></div><div><span>Delivery</span><span>${sh.shipTxt}</span></div><div class="tot"><span>Total</span><span>${sh.totTxt}</span></div>`;
+  $("place").textContent = `Place order · ${sh.totTxt}`;
+}
+function renderDone(){
+  const p = price(state), sh = shipInfo(p);
+  const v = id => $(id).value.trim();
+  const name = v("fName");
+  $("thanks").textContent = name ? `Thank you, ${name.split(" ")[0]}!` : "Thank you!";
+  $("ocPaid").textContent = `Paid · ${state.pay}`;
+  drawChain($("chainDone"), state, { interactive:false });
+  const row = (a, b) => `<div class="row2"><span>${a}</span><span>${b}</span></div>`;
+  $("ocBody").innerHTML = `<b>${specText()}</b><ul class="clist">${listHTML()}</ul>`
+    + row("Delivery", `${sh.ship[2]} · ${sh.shipTxt}`) + row("Total", `<b>${sh.totTxt}</b>`)
+    + row("Customer", [name, v("fPhone")].filter(Boolean).join(" · ") || "Name and number from checkout")
+    + (v("fAddr") ? row("Ship to", [v("fAddr"), v("fBrgy"), v("fZip")].filter(Boolean).join(", ")) : "");
+}
+function setStep(step){
+  document.querySelectorAll("#cart .step").forEach(s => s.hidden = s.dataset.step !== step);
+  ({ cart:renderCart, checkout:renderCheckout, done:renderDone })[step]();
+  $("cart").scrollTop = 0;
+}
+function openCart(){
+  if (!state.charms.length && !state.clasp) {
+    $("charms").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    return;
+  }
+  $("copied").textContent = "";
+  setStep("cart");
+  $("cart").showModal();
+}
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $("cart").close());
+document.querySelectorAll("[data-back]").forEach(b => b.onclick = () => setStep(b.dataset.back));
+document.querySelectorAll("dialog").forEach(d => d.addEventListener("click", e => { if (e.target === d) d.close(); }));
+$("toCheckout").onclick = () => setStep("checkout");
+$("place").onclick = () => {
+  const miss = ["fName", "fPhone"].filter(id => !$(id).value.trim());
+  $("coMsg").textContent = miss.length ? "Add your name and contact number so we can reach you." : "";
+  if (miss.length) { $(miss[0]).focus(); return; }
+  setStep("done");
+};
+$("again").onclick = () => { state.charms = []; state.clasp = false; state.extender = false; note = ""; $("cart").close(); update(); };
+document.querySelectorAll("[name=ship]").forEach(r => r.onchange = renderCheckout);
+RULES.payment.slice().sort((a, b) => (b === "GCash") - (a === "GCash")).forEach(m => {
+  $("pays").insertAdjacentHTML("beforeend", `<label class="opt"><input type="radio" name="pay" value="${m}"${m === state.pay ? " checked" : ""}><span>${m}</span></label>`);
+});
+document.querySelectorAll("[name=pay]").forEach(r => r.onchange = () => state.pay = r.value);
+
+function orderText(){
+  const p = price(state), sh = shipInfo(p);
+  return [
+    "SOLASTA JEWELRY BAR ORDER",
+    specText(),
+    "",
+    `Charms (${state.charms.length}${state.clasp ? " + clasp charm" : ""}):`,
+    ...groups().map(({ s, q }) => `- ${charmName(s)} x${q}${byId[s.id].tier === "basic" ? "" : ` (+₱${RULES.tier_delta[byId[s.id].tier]})`}`),
+    ...(state.clasp ? [`- clasp charm x1 (+₱${RULES.clasp.price})`] : []),
+    "",
+    ...p.lines.map(([l, x]) => `${l}: ${peso(x)}`),
+    `SUBTOTAL: ${peso(p.total)} plus delivery`
+  ].join("\n");
+}
+$("copy").onclick = async () => {
+  const txt = orderText();
+  try { await navigator.clipboard.writeText(txt); }
+  catch { const t = document.createElement("textarea"); t.value = txt; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
+  $("copied").textContent = "Copied. Paste it in a DM to @solasta.jewelrybar";
+};
+
+function update(fromCharm){
+  const p = price(state);
+  renderControls();
+  drawChain($("chain"), state, { interactive:true, justAdded });
+  $("hint").hidden = !!(state.charms.length || state.clasp);
+  const n = state.charms.length, any = n || state.clasp;
+  $("barTotal").textContent = peso(p.total);
+  $("barCount").textContent = n ? `· ${n} charm${n > 1 ? "s" : ""}${state.clasp ? " + clasp" : ""}` : state.clasp ? "· clasp charm" : "· no charms yet";
+  const bn = $("barNote");
+  const free = freeSpot(p);
+  bn.textContent = free ? "Add 1 more charm, the spot is free ✦" : fromCharm ? note : (p.total ? "Before delivery" : "");
+  bn.classList.toggle("free", free);
+  if (fromCharm) { bn.classList.remove("flash"); void bn.offsetWidth; bn.classList.add("flash"); }
+  $("go").textContent = any ? "Add to cart" : "Pick a charm";
+  $("go").classList.toggle("quiet", !any);
+  renderGrid();
+  justAdded = null;
+}
+
+document.querySelectorAll("[data-piece]").forEach(b => b.onclick = () => {
+  state.piece = b.dataset.piece;
+  state.length = state.piece === "bracelet" ? RULES.defaults.bracelet : (state.clasp ? RULES.defaults.clasp_necklace : RULES.defaults.necklace);
+  update();
+});
+$("clasp").onchange = e => {
+  state.clasp = e.target.checked;
+  if (state.piece === "necklace") state.length = state.clasp ? RULES.defaults.clasp_necklace : RULES.defaults.necklace;
+  note = state.clasp ? "Clasp charm added, it takes one spot" : "Clasp charm removed";
+  update(true);
+};
+$("extender").onchange = e => { state.extender = e.target.checked; update(); };
+$("go").onclick = openCart;
+
+/* ---------- self-test: open index.html?test ---------- */
+function selfTest(){
+  const mk = (o) => Object.assign({ piece:"necklace", style:"figaro", thickness:"thin", length:16, clasp:false, extender:false, charms:[] }, o);
+  const basic = CHARMS.find(c => c.tier === "basic").id, p50 = CHARMS.find(c => c.tier === "premium50").id, p80 = CHARMS.find(c => c.tier === "premium80" && !c.variant_set).id;
+  const many = (id, k) => Array.from({ length:k }, () => ({ id }));
+  const cases = [
+    ["1 charm", mk({ charms:many(basic,1) }), 350],
+    ["3 charms", mk({ charms:many(basic,3) }), 550],
+    ["4 rounds up to 5", mk({ charms:many(basic,4) }), 690],
+    ["5 charms", mk({ charms:many(basic,5) }), 690],
+    ["7 charms", mk({ charms:many(basic,7) }), 820],
+    ["9 charms", mk({ charms:many(basic,9) }), 990],
+    ["11 charms", mk({ charms:many(basic,11) }), 1150],
+    ["12 = 11 + 150", mk({ charms:many(basic,12) }), 1300],
+    ["13 = 11 + 300", mk({ charms:many(basic,13) }), 1450],
+    ["5 with 2x +50 and 1x +80", mk({ charms:[...many(basic,2), ...many(p50,2), ...many(p80,1)] }), 870],
+    ["4 charms + clasp = 5 spots + 50", mk({ charms:many(basic,4), clasp:true }), 740],
+    ["22in necklace +50", mk({ charms:many(basic,3), length:22 }), 600],
+    ["20in necklace no surcharge", mk({ charms:many(basic,3), length:20 }), 550],
+    ["bracelet 6.5 with extender", mk({ piece:"bracelet", length:6.5, charms:many(basic,1), extender:true }), 370],
+    ["letter variant priced at its tier", mk({ charms:[{ id:"p80-078", variant:"M" }] }), 430],
+    ["name MIA = 3 letters", mk({ charms:["M","I","A"].map(v => ({ id:"p80-078", variant:v })) }), 790],
+  ];
+  let pass = 0; const out = [];
+  cases.forEach(([name, s, want]) => { const got = price(s).total; if (got === want) pass++; else out.push(`FAIL ${name}: got ${got}, want ${want}`); });
+  const nudge = [[4, true], [5, false], [10, true], [11, false], [12, false]].every(([k, want]) => freeSpot(price(mk({ charms:many(basic,k) }))) === want);
+  nudge ? pass++ : out.push("FAIL free-spot nudge at 4/5/10/11/12");
+  const total = cases.length + 1;
+  out.unshift(`SELFTEST ${pass === total ? "PASS" : "FAIL"} ${pass}/${total}`);
+  out.push("Note: catalog's 7-charm sample (820 + 330) doesn't resolve from +50/+80; engine follows documented rules.");
+  const box = document.createElement("pre"); box.id = "selftest"; box.textContent = out.join("\n"); document.body.appendChild(box);
+}
+
+/* ---------- start: chain options open on laptops; hide the loading screen once charms are ready ---------- */
+if (matchMedia("(min-width:900px)").matches) $("chainbox").open = true;
+renderTabs();
+update();
+setStageH();
+
+(function splash(){
+  const s = $("splash"), t0 = performance.now();
+  const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const minMs = location.search.includes("test") ? 0 : calm ? 300 : 1900;
+  const hide = () => { s.classList.add("gone"); setTimeout(() => s.remove(), 600); };
+  const imgs = CHARMS.filter(c => c.category === state.tab).map(c => new Promise(r => { const i = new Image(); i.onload = i.onerror = r; i.src = "charms/" + c.file; }));
+  Promise.race([Promise.all([document.fonts ? document.fonts.ready : 0, ...imgs]), new Promise(r => setTimeout(r, 3000))])
+    .then(() => setTimeout(hide, Math.max(0, minMs - (performance.now() - t0))))
+    .then(() => LETTERS.variant_options.forEach(v => { new Image().src = "charms/" + LETTERS.variant_files.replace("{v}", v); }));
+})();
+if (location.search.includes("test")) selfTest();
+</script>
+</body>
+</html>
