@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f4e2ac'/><stop offset='.55' stop-color='%23c99a4a'/><stop offset='1' stop-color='%239c7233'/></linearGradient></defs><circle cx='32' cy='32' r='31' fill='%23a1654c'/><circle cx='32' cy='15' r='5' fill='none' stroke='%23f4e2ac' stroke-width='3'/><path d='M32 52 C14 40 13 26 21 22.5 C26 20.5 30 23 32 27 C34 23 38 20.5 43 22.5 C51 26 50 40 32 52 Z' fill='url(%23g)'/></svg>">
 <title>Design your charm jewelry · Solasta Jewelry Bar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,6 +64,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .charm-on-chain{cursor:grab}
 #chain{touch-action:none}
 #chain.dragging,#chain.dragging .charm-on-chain{cursor:grabbing}
+.charm-on-chain.lift{filter:drop-shadow(0 6px 5px rgba(61,42,33,.35))}
 .charm-on-chain.sel{filter:drop-shadow(0 0 1px var(--cocoa)) drop-shadow(0 0 4px rgba(161,101,76,.85))}
 .tools{position:absolute;z-index:7;display:flex;gap:2px;background:var(--ink);border-radius:999px;padding:4px;box-shadow:0 8px 20px -8px rgba(61,42,33,.6);transform:translateX(-50%)}
 .tools[hidden],.coach[hidden]{display:none}
@@ -82,7 +84,7 @@ button{transition:transform .12s ease,background-color .15s,box-shadow .15s,filt
 .tile.pop{animation:pop .45s ease-out}
 @keyframes bump{0%,100%{transform:none}40%{transform:scale(1.1)}}
 #go.bump{animation:bump .4s ease-out}
-@media (hover:hover){.tile{cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28'><circle cx='14' cy='14' r='8' fill='%23fffaf3' stroke='%23c99a4a' stroke-width='2.5'/><path d='M14 10.5v7M10.5 14h7' stroke='%23834d39' stroke-width='2' stroke-linecap='round'/></svg>") 14 14, pointer}}
+@media (hover:hover){.grid .tile{cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f4e2ac'/><stop offset='.55' stop-color='%23c99a4a'/><stop offset='1' stop-color='%239c7233'/></linearGradient></defs><circle cx='13' cy='5' r='3' fill='none' stroke='%239c7233' stroke-width='1.6'/><path d='M13 27 C3 20 3 12 7.5 10 C10 9 12 10.5 13 12.5 C14 10.5 16 9 18.5 10 C23 12 23 20 13 27 Z' fill='url(%23g)' stroke='%239c7233' stroke-width='1'/><circle cx='24.5' cy='24.5' r='6' fill='%23834d39'/><path d='M24.5 21.5v6M21.5 24.5h6' stroke='white' stroke-width='1.8' stroke-linecap='round'/></svg>") 13 5, pointer}}
 .charm-on-chain:focus-visible{outline:none}
 .charm-on-chain:focus-visible .ring{stroke:var(--cocoa);stroke-width:2}
 @keyframes swing{0%{transform:rotate(16deg)}35%{transform:rotate(-9deg)}60%{transform:rotate(5deg)}80%{transform:rotate(-2deg)}100%{transform:rotate(0)}}
@@ -535,7 +537,8 @@ function drawChain(svg, s, opts){
       // a bigger invisible target than the charm itself, so it's easy to tap on a phone
       const hw = Math.max(size, 24) / 2;
       grp.insertBefore(el("rect", { x:p.x - hw, y:p.y - 6, width:hw * 2, height:size * 1.35 + 10, fill:"#000", "fill-opacity":0 }), grp.firstChild);
-      SLOTS.push({ idx:it.idx, x:p.x, bottom:ay + dh });
+      SLOTS.push({ idx:it.idx, x:p.x, y:p.y, bottom:ay + dh });
+      grp._c = it.c;
       grp.setAttribute("class", "charm-on-chain" + (s.sel === it.idx ? " sel" : ""));
       grp.dataset.idx = it.idx;
       grp.setAttribute("tabindex", "0");
@@ -859,22 +862,54 @@ chainSvg.addEventListener("pointerdown", e => {
   const g = e.target.closest(".charm-on-chain");
   if (!g) { if (state.sel != null) { state.sel = null; update(); } return; }
   drag = { idx:+g.dataset.idx, x:e.clientX, y:e.clientY, moved:false };
-  chainSvg.setPointerCapture(e.pointerId);
+  try { chainSvg.setPointerCapture(e.pointerId); } catch {}
 });
 chainSvg.addEventListener("pointermove", e => {
   if (!drag) return;
   if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
   if (!drag.moved) { drag.moved = true; chainSvg.classList.add("dragging"); $("coach").hidden = true; state.sel = drag.idx; }
   const pt = chainSvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
-  const x = pt.matrixTransform(chainSvg.getScreenCTM().inverse()).x;
+  const q = pt.matrixTransform(chainSvg.getScreenCTM().inverse());
   let best = drag.idx, bd = Infinity;
-  SLOTS.forEach(s => { const d = Math.abs(s.x - x); if (d < bd) { bd = d; best = s.idx; } });
-  if (best !== drag.idx && moveCharm(drag.idx, best)) { drag.idx = best; drawChain(chainSvg, state, { interactive:true }); placeTools(); }
+  SLOTS.forEach(s => { const d = Math.abs(s.x - q.x); if (d < bd) { bd = d; best = s.idx; } });
+  if (best !== drag.idx) {
+    // the others slide to their new spots instead of jumping (FLIP)
+    const before = new Map([...chainSvg.querySelectorAll(".charm-on-chain")].map(g => [g._c, SLOTS.find(s => s.idx === +g.dataset.idx).x]));
+    if (moveCharm(drag.idx, best)) {
+      drag.idx = best;
+      drawChain(chainSvg, state, { interactive:true });
+      $("tools").hidden = true;
+      if (!calm()) chainSvg.querySelectorAll(".charm-on-chain").forEach(g => {
+        if (+g.dataset.idx === drag.idx) return;
+        const dx = before.get(g._c) - SLOTS.find(s => s.idx === +g.dataset.idx).x;
+        if (!dx) return;
+        g.style.transition = "none"; g.style.transform = `translate(${dx}px,0)`;
+        requestAnimationFrame(() => requestAnimationFrame(() => { g.style.transition = "transform .22s cubic-bezier(.3,.7,.3,1)"; g.style.transform = ""; }));
+      });
+    }
+  }
+  // the dragged charm follows the pointer, lifted a little
+  const slot = SLOTS.find(s => s.idx === drag.idx), g = chainSvg.querySelector(`[data-idx="${drag.idx}"]`);
+  if (slot && g) {
+    drag.dx = q.x - slot.x; drag.dy = Math.max(-14, Math.min(26, q.y - slot.y - 14));
+    g.classList.add("lift"); g.style.transition = "none";
+    g.style.transform = `translate(${drag.dx}px,${drag.dy}px) scale(1.12)`;
+  }
 });
+const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 const endDrag = () => {
   if (!drag) return;
   chainSvg.classList.remove("dragging");
-  if (drag.moved) { state.sel = null; update(true); }
+  if (drag.moved) {
+    const { idx, dx = 0, dy = 0 } = drag;
+    state.sel = null; update(true);
+    // settle into its spot from where it was let go
+    const g = chainSvg.querySelector(`[data-idx="${idx}"]`);
+    if (g && !calm()) {
+      g.style.transition = "none"; g.style.transform = `translate(${dx}px,${dy}px) scale(1.12)`;
+      requestAnimationFrame(() => requestAnimationFrame(() => { g.style.transition = "transform .28s cubic-bezier(.3,1.4,.5,1)"; g.style.transform = ""; }));
+    }
+  }
   else { state.sel = state.sel === drag.idx ? null : drag.idx; update(); }
   drag = null;
 };
